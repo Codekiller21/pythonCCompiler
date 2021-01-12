@@ -2,6 +2,8 @@ import sys
 from typing import Final
 
 import fileio
+import preprocessor
+import lexical
 
 
 class InvalidArgsException(Exception):
@@ -60,7 +62,26 @@ def main():
     except IOError:
         print(f"Error reading file: {o.input_file}", file=sys.stderr)
         exit(-1)
-    print(file_data)
+
+    pre = None
+    try:
+        pre = preprocessor.pre_process(file_data, None)
+    except preprocessor.PreProcessException as e:
+        print(str(e), file=sys.stderr)
+        exit(-1)
+    print(pre, end="\n\n\n")
+
+    toks = None
+    try:
+        toks = lexical.tokenize(pre + "\n\n")
+    except lexical.TokenizerException as e:
+        print(str(e), file=sys.stderr)
+        exit(-1)
+    except IndexError:
+        print("Unexpected end of file in tokenizing")
+        exit(-1)
+    for t in toks:
+        print(str(t))
 
 
 if __name__ == "__main__":
